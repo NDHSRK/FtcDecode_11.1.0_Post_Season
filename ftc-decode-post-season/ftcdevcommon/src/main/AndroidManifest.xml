@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- From https://stackoverflow.com/questions/57116335/environment-getexternalstoragedirectory-deprecated-in-api-level-29-java -->
+    <!-- This attribute is "false" by default on apps targeting
+     Android 10 or higher. -->
+    <application android:requestLegacyExternalStorage="true" />
+
+</manifest>

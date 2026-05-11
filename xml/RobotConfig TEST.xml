@@ -1,0 +1,45 @@
+<RobotConfig>
+
+  <DRIVE_TRAIN configured="no">
+    <multiple_motors model="goBILDA 5203 Yellow Jacket Planetary Gear Motor 5203-2402-0014"
+      clicks_per_motor_rev="384.5" rpm="435.0">
+      <left_front_drive device_name="lf" direction="REVERSE" />
+      <right_front_drive device_name="rf" direction="FORWARD" />
+      <left_back_drive device_name="lb" direction="REVERSE" />
+      <right_back_drive device_name="rb" direction="FORWARD" />
+    </multiple_motors>
+    <min_velocity>.2</min_velocity>
+  </DRIVE_TRAIN>
+
+  <!-- TELEOP_SETTINGS will only apply if the drive train is configured
+   in and the selected OpMode is a TeleOp OpMode. -->
+  <TELEOP_SETTINGS>
+    <log_level>d</log_level>
+    <!-- Settings for the velocity control buttons on the game controller. -->
+    <drive_train_power>
+      <high>1.0</high>
+      <low>0.65</low>
+    </drive_train_power>
+  </TELEOP_SETTINGS>
+
+  <!-- Cameras -->
+  <VISION_PORTAL_WEBCAM configured="no">
+    <webcam_set>
+      <webcam>
+        <internal_id>front_webcam</internal_id>
+        <!-- ELP serial number -->
+        <serial_number>01.00.00</serial_number>
+        <resolution_width>640</resolution_width>
+        <resolution_height>480</resolution_height>
+        <field_of_view>120.0</field_of_view>
+        <distance_camera_lens_to_robot_center>0.0</distance_camera_lens_to_robot_center>
+        <offset_camera_lens_from_robot_center>0.0</offset_camera_lens_from_robot_center>
+        <processor_set>
+          <processor>raw_frame</processor>
+          <!-- processor>camera_stream_preview</processor -->
+        </processor_set>
+      </webcam>
+    </webcam_set>
+  </VISION_PORTAL_WEBCAM>
+
+</RobotConfig>
