@@ -21,6 +21,18 @@ public class IntakeMotion {
 
     private static final String TAG = IntakeMotion.class.getSimpleName();
 
+    private enum IntakeMotionStates {
+        START,
+        INTAKE_IN_PROGRESS,
+        PAUSE_IN_PROGRESS,
+        RESUME_INTAKE,
+        FINISH,
+    }
+
+    private enum IntakeMotionEvents {
+        INITIALIZE, PAUSE, RESUME, EXIT, START_INTAKE, CHECK_INTAKE_CONDITIONS,
+    }
+
     // Thread-related.
     private IntakeCallable intakeCallable;
     private CompletableFuture<Integer> intakeFuture;
@@ -91,6 +103,10 @@ public class IntakeMotion {
         public Integer call() {
             RobotLogCommon.d(TAG, "Intake future is running");
 
+            // Initial states and events for state machine
+            IntakeMotionStates nextState = IntakeMotionStates.START;
+            IntakeMotionEvents nextEvent = IntakeMotionEvents.INITIALIZE;
+
             // Sanity check.
             if (artifactsToIntake == 0) {
                 RobotLogCommon.d(TAG, "Call to intake 0 artifacts");
@@ -107,47 +123,70 @@ public class IntakeMotion {
             // not load another library just for this.
 
             ElapsedTime intakeTimer = new ElapsedTime();
-            intakeTimer.reset(); // start timer for total elapsed time including pauses
 
             boolean transitionToPause = true;
             boolean intakePaused = false;
             ElapsedTime pauseTimer = new ElapsedTime(); // timer for a single pause
             double totalTimePaused = 0.0;
             int boundary = 1;
-            while (!stopThreadRequested() && !Thread.interrupted() && !stopIntake.get()) {
+            while (nextEvent != IntakeMotionEvents.EXIT) {
                 // Check for a requested pause in intake while outtake is in progress.
                 // Start a pause timer here to get the time spent in this pause.
-                if (pauseIntake) {
-                    if (transitionToPause) {
-                        transitionToPause = false;
-                        intakePaused = true;
-                        pauseTimer.reset();
-                    }
-                    continue;
-                }
 
-                // If we've just come out of a pause, add the time spent in the
-                // pause to the total.
-                if (intakePaused) {
-                    intakePaused = false;
-                    transitionToPause = true; // for the next time around
-                    totalTimePaused += pauseTimer.milliseconds();
-                }
+                switch (nextState) {
 
-                // Check to see if the intake timer (minus time spent in all pauses)
-                // has crossed a boundary, e.g. zero to one seconds.
-                if ((intakeTimer.milliseconds() - totalTimePaused) / 1000 == boundary) {
-                    artifactsInRevolver++; // increment on a 1-second boundary
-                    if (++boundary > artifactsToIntake)
+                    case START: {
+                        nextState = IntakeMotionStates.INTAKE_IN_PROGRESS;
+                        // Action
+                        // start timer for total elapsed time including pauses
+                        intakeTimer.reset();
+                        // Event
+                        nextEvent = IntakeMotionEvents.START_INTAKE;
                         break;
-                }
+                    }
+                    case INTAKE_IN_PROGRESS: {
+                        // Guards:
+                        // stop conditions: (!stopThreadRequested() && !Thread.interrupted() && !stopIntake.get())
+                        // pause button pressed
+                        // intake timer expired / revolver full
+                        //
+                        if (!stopThreadRequested() && !Thread.interrupted() && !stopIntake.get()) {
+                            nextState = IntakeMotionStates.FINISH;
+                            nextEvent = IntakeMotionEvents.EXIT;
+                        } else if (pauseIntake) {
+                            nextState = IntakeMotionStates.PAUSE_IN_PROGRESS;
+                            // start pause timer
+                            pauseTimer.reset();
+                            nextEvent = IntakeMotionEvents.PAUSE;
+                        } else if ((intakeTimer.milliseconds() - totalTimePaused) / 1000 == boundary) {
+                            artifactsInRevolver++; // increment on a 1-second boundary
+                            if (++boundary > artifactsToIntake) {
+                                nextState = IntakeMotionStates.FINISH;
+                                nextEvent = IntakeMotionEvents.EXIT;
+                            }
+                        } else {
+                            nextEvent = IntakeMotionEvents.CHECK_INTAKE_CONDITIONS;
+                        }
+                        break;
+                    }
 
+                    case PAUSE_IN_PROGRESS: {
+                        if (!stopThreadRequested() && !Thread.interrupted() && !stopIntake.get()) {
+                            nextState = IntakeMotionStates.FINISH;
+                            nextEvent = IntakeMotionEvents.EXIT;
+                        } else if (!pauseIntake) {
+                            nextState = IntakeMotionStates.INTAKE_IN_PROGRESS;
+                            totalTimePaused += pauseTimer.milliseconds();
+                            nextEvent = IntakeMotionEvents.RESUME;
+                        }
+                        break;
+                    }
+
+                }
                 SystemClock.sleep(25);
             }
-
             return artifactsInRevolver;
         }
     }
-
 }
 
