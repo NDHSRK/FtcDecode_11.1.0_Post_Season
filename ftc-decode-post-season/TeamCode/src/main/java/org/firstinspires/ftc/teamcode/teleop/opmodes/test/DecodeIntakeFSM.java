@@ -123,6 +123,12 @@ public class DecodeIntakeFSM extends TeleOpBase {
                     exitButton.reset();
                 }
 
+                //**TODO states should be paired with events. If there is only one,
+                // e.g. the only event for the START state is GET_GAMEPAD_EVENT,
+                // we should at least check it (for the sake of integrity). If there
+                // is more than one then within the case statement for the state we
+                // would need a switch statement for the event. This goes for the
+                // FSM in IntakeMotion also.
                 switch (nextState) {
                     case START: {
                         // Button press to turn intake ON. Assume the Revolver is empty.
