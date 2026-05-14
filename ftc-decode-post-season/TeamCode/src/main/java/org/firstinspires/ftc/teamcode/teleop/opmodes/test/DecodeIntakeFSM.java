@@ -95,10 +95,13 @@ public class DecodeIntakeFSM extends TeleOpBase {
             // Main loop.
             while (linearOpMode.opModeIsActive() && nextEvent != DecodeTeleOpEvent.EXIT) {
 
-                linearOpMode.telemetry.addLine("To start intake, press A");
+                linearOpMode.telemetry.addLine("To start intake, press and hold A");
                 linearOpMode.telemetry.addLine("From state " + DecodeTeleOpState.INTAKE_IN_PROGRESS + " press B to start outtake, Y to start the lifter, or X to exit");
                 linearOpMode.telemetry.addLine("From state " + DecodeTeleOpState.OUTTAKE_IN_PROGRESS + " press Y to start the lifter, or X to exit");
                 linearOpMode.telemetry.addLine("From state " + DecodeTeleOpState.LIFTER_IN_PROGRESS + " press X to exit");
+                linearOpMode.telemetry.addLine();
+                linearOpMode.telemetry.addLine("Current state: " + nextState + ", event " + nextEvent);
+                linearOpMode.telemetry.addLine("Current event: " + nextEvent);
                 linearOpMode.telemetry.update();
 
                 // Updating all button states here is safer even though
@@ -127,7 +130,7 @@ public class DecodeIntakeFSM extends TeleOpBase {
                         if (intakeButton.is(FTCButton.State.TAP)) {
                             nextState = DecodeTeleOpState.INTAKE_IN_PROGRESS;
                             // Action
-                            System.out.println("Intake button pressed; transition to state " + DecodeTeleOpState.INTAKE_IN_PROGRESS);
+                            RobotLogCommon.d(TAG, "Intake button pressed; transition to state " + DecodeTeleOpState.INTAKE_IN_PROGRESS);
                             intakeOnAction();
                             nextEvent = DecodeTeleOpEvent.GET_GAMEPAD_EVENT;
                         }
@@ -140,14 +143,14 @@ public class DecodeIntakeFSM extends TeleOpBase {
                             // has completed automatically because the Revolver is full.
                             nextState = DecodeTeleOpState.INTAKE_DONE;
                             // Action
-                            System.out.println("Intake finished; transition to state" + DecodeTeleOpState.INTAKE_DONE);
+                            RobotLogCommon.d(TAG, "Intake finished; transition to state " + DecodeTeleOpState.INTAKE_DONE);
                             intakeDoneAction();
                             nextEvent = DecodeTeleOpEvent.GET_GAMEPAD_EVENT;
                         } else if (intakeButton.is(FTCButton.State.UP)) {
                             // The driver has released the intake button; stop intake.
                             nextState = DecodeTeleOpState.INTAKE_DONE;
                             // Action
-                            System.out.println("Intake stopped; revolver may or may not be full; transition to state" + DecodeTeleOpState.INTAKE_DONE);
+                            RobotLogCommon.d(TAG, "");
                             intakeOffAction();
                             intakeDoneAction();
                             nextEvent = DecodeTeleOpEvent.GET_GAMEPAD_EVENT;
@@ -155,7 +158,6 @@ public class DecodeIntakeFSM extends TeleOpBase {
                             // Turn outtake ON while intake is in progress.
                             nextState = DecodeTeleOpState.INTAKE_PAUSED_AND_OUTTAKE_IN_PROGRESS;
                             // Action
-                            System.out.println("Intake paused and outtake in progress; transition to state" + DecodeTeleOpState.INTAKE_PAUSED_AND_OUTTAKE_IN_PROGRESS);
                             outtakeOnDuringIntakeAction();
                             nextEvent = DecodeTeleOpEvent.GET_GAMEPAD_EVENT;
                         }
@@ -168,7 +170,10 @@ public class DecodeIntakeFSM extends TeleOpBase {
                         // For the demonstration, exit on a button press.
                         if (exitButton.is(FTCButton.State.TAP)) {
                             nextEvent = DecodeTeleOpEvent.EXIT;
+                            RobotLogCommon.d(TAG, "Exit button tapped");
                         } else if (intakeButton.is(FTCButton.State.TAP) && !revolverIsFull()) {
+                            intakeOnAction();
+                            RobotLogCommon.d(TAG, "Intake restarted; transition to state " + DecodeTeleOpState.INTAKE_IN_PROGRESS);
                             nextState = DecodeTeleOpState.INTAKE_IN_PROGRESS;
                             nextEvent = DecodeTeleOpEvent.GET_GAMEPAD_EVENT;
                             // Check button press to turn intake back ON; the revolver must not be full.
@@ -205,15 +210,18 @@ public class DecodeIntakeFSM extends TeleOpBase {
                         // Allow an immediate exit.
                         if (exitButton.is(FTCButton.State.TAP)) {
                             nextEvent = DecodeTeleOpEvent.EXIT;
+                            RobotLogCommon.d(TAG, "Exit button tapped");
                         } else if (intakeButton.is(FTCButton.State.TAP) && !revolverIsFull()) {
                             // Check button press to turn intake back ON; revolver must not be full.
                             nextState = DecodeTeleOpState.INTAKE_IN_PROGRESS;
                             nextEvent = DecodeTeleOpEvent.GET_GAMEPAD_EVENT;
+                            RobotLogCommon.d(TAG, "Turn intake back on with " + artifactsInRevolver + " artifacts in the revolver");
                         } else if (outtakeButton.is(FTCButton.State.TAP)) {
                             // Check button press to turn outtake back ON.
                             outtakeOnAction();
                             nextState = DecodeTeleOpState.OUTTAKE_IN_PROGRESS;
                             nextEvent = DecodeTeleOpEvent.GET_GAMEPAD_EVENT;
+                            RobotLogCommon.d(TAG, "Turn outtake back on");
                         }
 
                         break;
@@ -225,6 +233,7 @@ public class DecodeIntakeFSM extends TeleOpBase {
                             outtakeOffDuringIntakeAction();
                             nextState = DecodeTeleOpState.INTAKE_IN_PROGRESS;
                             nextEvent = DecodeTeleOpEvent.GET_GAMEPAD_EVENT;
+                            RobotLogCommon.d(TAG, "Turn outtake off and resume intake");
                         }
 
                         break;
@@ -236,6 +245,7 @@ public class DecodeIntakeFSM extends TeleOpBase {
                         // The driver lets the lifter run to completion.
                         if (checkLiftDone()) {
                             nextEvent = DecodeTeleOpEvent.EXIT;
+                            RobotLogCommon.d(TAG, "Lifter is done, exit");
                         }
                         break;
                     }

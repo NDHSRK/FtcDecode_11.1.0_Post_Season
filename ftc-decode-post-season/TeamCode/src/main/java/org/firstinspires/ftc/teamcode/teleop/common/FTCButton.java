@@ -47,6 +47,10 @@ public class FTCButton {
         return state == pState;
     }
 
+    public State getState() {
+        return state;
+    }
+
     public void reset() {
         state = State.OFF;
     }

@@ -103,10 +103,6 @@ public class IntakeMotion {
         public Integer call() {
             RobotLogCommon.d(TAG, "Intake future is running");
 
-            // Initial states and events for state machine
-            IntakeMotionStates nextState = IntakeMotionStates.START;
-            IntakeMotionEvents nextEvent = IntakeMotionEvents.INITIALIZE;
-
             // Sanity check.
             if (artifactsToIntake == 0) {
                 RobotLogCommon.d(TAG, "Call to intake 0 artifacts");
@@ -123,34 +119,33 @@ public class IntakeMotion {
             // not load another library just for this.
 
             ElapsedTime intakeTimer = new ElapsedTime();
-
-            boolean transitionToPause = true;
-            boolean intakePaused = false;
             ElapsedTime pauseTimer = new ElapsedTime(); // timer for a single pause
             double totalTimePaused = 0.0;
             int boundary = 1;
-            while (nextEvent != IntakeMotionEvents.EXIT) {
-                // Check for a requested pause in intake while outtake is in progress.
-                // Start a pause timer here to get the time spent in this pause.
 
+            // Initial state and event for the state machine.
+            IntakeMotionStates nextState = IntakeMotionStates.START;
+            IntakeMotionEvents nextEvent = IntakeMotionEvents.INITIALIZE;
+
+            while (nextEvent != IntakeMotionEvents.EXIT) {
                 switch (nextState) {
 
                     case START: {
                         nextState = IntakeMotionStates.INTAKE_IN_PROGRESS;
-                        // Action
                         // start timer for total elapsed time including pauses
                         intakeTimer.reset();
                         // Event
                         nextEvent = IntakeMotionEvents.START_INTAKE;
                         break;
                     }
+
                     case INTAKE_IN_PROGRESS: {
                         // Guards:
-                        // stop conditions: (!stopThreadRequested() && !Thread.interrupted() && !stopIntake.get())
+                        // stop conditions: (stopThreadRequested() or Thread.interrupted() or stopIntake.get())
+                        // [stopIntake.get() is true if the driver releases the intake button.]
                         // pause button pressed
                         // intake timer expired / revolver full
-                        //
-                        if (!stopThreadRequested() && !Thread.interrupted() && !stopIntake.get()) {
+                        if (stopThreadRequested() || Thread.interrupted() || stopIntake.get()) {
                             nextState = IntakeMotionStates.FINISH;
                             nextEvent = IntakeMotionEvents.EXIT;
                         } else if (pauseIntake) {
@@ -158,7 +153,7 @@ public class IntakeMotion {
                             // start pause timer
                             pauseTimer.reset();
                             nextEvent = IntakeMotionEvents.PAUSE;
-                        } else if ((intakeTimer.milliseconds() - totalTimePaused) / 1000 == boundary) {
+                        } else if ((int) ((intakeTimer.milliseconds() - totalTimePaused) / 1000) == boundary) {
                             artifactsInRevolver++; // increment on a 1-second boundary
                             if (++boundary > artifactsToIntake) {
                                 nextState = IntakeMotionStates.FINISH;
@@ -171,7 +166,7 @@ public class IntakeMotion {
                     }
 
                     case PAUSE_IN_PROGRESS: {
-                        if (!stopThreadRequested() && !Thread.interrupted() && !stopIntake.get()) {
+                        if (stopThreadRequested() || Thread.interrupted() || stopIntake.get()) {
                             nextState = IntakeMotionStates.FINISH;
                             nextEvent = IntakeMotionEvents.EXIT;
                         } else if (!pauseIntake) {
@@ -181,8 +176,8 @@ public class IntakeMotion {
                         }
                         break;
                     }
-
                 }
+
                 SystemClock.sleep(25);
             }
             return artifactsInRevolver;
