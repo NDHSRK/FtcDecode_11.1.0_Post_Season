@@ -125,12 +125,16 @@ public class DecodeIntakeFSM extends TeleOpBase {
 
                 //**TODO states should be paired with events. If there is only one,
                 // e.g. the only event for the START state is GET_GAMEPAD_EVENT,
-                // we should at least check it (for the sake of integrity). If there
-                // is more than one then within the case statement for the state we
-                // would need a switch statement for the event. This goes for the
-                // FSM in IntakeMotion also.
+                // we should at least check it (for the sake of integrity). If a
+                // state can accept more than one event then then there should be
+                // a switch/case construct for the events, each of which may have
+                // its own set of guards. This goes for the FSM in IntakeMotion
+                // also.
                 switch (nextState) {
                     case START: {
+                        if (nextEvent != DecodeTeleOpEvent.GET_GAMEPAD_EVENT)
+                            throw new AutonomousRobotException(TAG, "Illegal state: START state does not support event " + nextEvent);
+
                         // Button press to turn intake ON. Assume the Revolver is empty.
                         // Guard
                         if (intakeButton.is(FTCButton.State.TAP)) {
