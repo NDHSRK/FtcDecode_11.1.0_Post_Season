@@ -5,6 +5,7 @@ import android.os.SystemClock;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.ftcdevcommon.AutoWorker;
+import org.firstinspires.ftc.ftcdevcommon.AutonomousRobotException;
 import org.firstinspires.ftc.ftcdevcommon.Threading;
 import org.firstinspires.ftc.teamcode.common.RobotLogCommon;
 
@@ -25,12 +26,11 @@ public class IntakeMotion {
         START,
         INTAKE_IN_PROGRESS,
         PAUSE_IN_PROGRESS,
-        RESUME_INTAKE,
         FINISH,
     }
 
     private enum IntakeMotionEvents {
-        INITIALIZE, PAUSE, RESUME, EXIT, START_INTAKE, CHECK_INTAKE_CONDITIONS,
+        INITIALIZE, INTAKE, PAUSE_INTAKE, EXIT
     }
 
     // Thread-related.
@@ -131,48 +131,62 @@ public class IntakeMotion {
                 switch (nextState) {
 
                     case START: {
+                        if (nextEvent != IntakeMotionEvents.INITIALIZE)
+                            throw new AutonomousRobotException(TAG, "Unexpected event " + nextEvent + " for state " + nextState);
+
                         nextState = IntakeMotionStates.INTAKE_IN_PROGRESS;
                         // start timer for total elapsed time including pauses
                         intakeTimer.reset();
                         // Event
-                        nextEvent = IntakeMotionEvents.START_INTAKE;
+                        nextEvent = IntakeMotionEvents.INTAKE;
                         break;
                     }
 
                     case INTAKE_IN_PROGRESS: {
-                        // Guards:
+                        if (nextEvent != IntakeMotionEvents.INTAKE)
+                            throw new AutonomousRobotException(TAG, "Unexpected event " + nextEvent + " for state " + nextState);
+
+                        // First check stop conditions.
                         // stop conditions: (stopThreadRequested() or Thread.interrupted() or stopIntake.get())
                         // [stopIntake.get() is true if the driver releases the intake button.]
-                        // pause button pressed
-                        // intake timer expired / revolver full
                         if (stopThreadRequested() || Thread.interrupted() || stopIntake.get()) {
                             nextState = IntakeMotionStates.FINISH;
                             nextEvent = IntakeMotionEvents.EXIT;
-                        } else if (pauseIntake) {
+                            break;
+                        }
+
+                        // Guard: request to pause intake.
+                        if (pauseIntake) {
                             nextState = IntakeMotionStates.PAUSE_IN_PROGRESS;
                             // start pause timer
                             pauseTimer.reset();
-                            nextEvent = IntakeMotionEvents.PAUSE;
-                        } else if ((int) ((intakeTimer.milliseconds() - totalTimePaused) / 1000) == boundary) {
+                            nextEvent = IntakeMotionEvents.PAUSE_INTAKE;
+                            break;
+                        }
+
+                        // Intake is running
+                        if ((int) ((intakeTimer.milliseconds() - totalTimePaused) / 1000) == boundary) {
                             artifactsInRevolver++; // increment on a 1-second boundary
                             if (++boundary > artifactsToIntake) {
                                 nextState = IntakeMotionStates.FINISH;
                                 nextEvent = IntakeMotionEvents.EXIT;
+                                break;
                             }
-                        } else {
-                            nextEvent = IntakeMotionEvents.CHECK_INTAKE_CONDITIONS;
                         }
                         break;
                     }
 
                     case PAUSE_IN_PROGRESS: {
+                        if (nextEvent != IntakeMotionEvents.PAUSE_INTAKE)
+                            throw new AutonomousRobotException(TAG, "Unexpected event " + nextEvent + " for state " + nextState);
+
                         if (stopThreadRequested() || Thread.interrupted() || stopIntake.get()) {
                             nextState = IntakeMotionStates.FINISH;
                             nextEvent = IntakeMotionEvents.EXIT;
                         } else if (!pauseIntake) {
                             nextState = IntakeMotionStates.INTAKE_IN_PROGRESS;
                             totalTimePaused += pauseTimer.milliseconds();
-                            nextEvent = IntakeMotionEvents.RESUME;
+                            nextEvent = IntakeMotionEvents.INTAKE; // resume intake
                         }
                         break;
                     }
