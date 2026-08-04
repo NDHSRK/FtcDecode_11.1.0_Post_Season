@@ -4,9 +4,15 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.ftcdevcommon.AutonomousRobotException;
+import org.firstinspires.ftc.ftcdevcommon.Pair;
 import org.firstinspires.ftc.ftcdevcommon.platform.android.WorkingDirectory;
 import org.firstinspires.ftc.teamcode.common.RobotConstants;
+import org.firstinspires.ftc.teamcode.common.RobotConstantsDecode;
 import org.firstinspires.ftc.teamcode.common.RobotLogCommon;
+import org.firstinspires.ftc.teamcode.robot.FTCRobot;
+import org.firstinspires.ftc.teamcode.robot.device.camera.GrayscaleThresholdProcessor;
+import org.firstinspires.ftc.teamcode.robot.device.camera.VisionPortalWebcam;
+import org.firstinspires.ftc.teamcode.robot.device.camera.VisionPortalWebcamConfiguration;
 import org.firstinspires.ftc.teamcode.teleop.common.FTCButton;
 import org.firstinspires.ftc.teamcode.xml.GrayscaleParametersXMLIn;
 import org.firstinspires.ftc.teamcode.xml.GrayscaleParametersXMLOut;
@@ -14,6 +20,7 @@ import org.firstinspires.ftc.teamcode.xml.VisionParameters;
 import org.xml.sax.SAXException;
 
 import java.io.IOException;
+import java.util.Objects;
 
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -25,6 +32,7 @@ import javax.xml.parsers.ParserConfigurationException;
 public class SetGrayscaleThreshold extends LinearOpMode {
     private static final String TAG = SetGrayscaleThreshold.class.getSimpleName();
 
+    private GrayscaleThresholdProcessor grayscaleThresholdProcessor;
     private FTCButton factoryResetButton;
     private FTCButton factoryResetConfirmButton;
     private FTCButton factoryResetCancelButton;
@@ -41,38 +49,30 @@ public class SetGrayscaleThreshold extends LinearOpMode {
     private boolean grayParametersChanged = false;
 
     @Override
-    public void runOpMode() {
+    public void runOpMode() throws InterruptedException {
         RobotLogCommon.c(TAG, "Initializing SetGrayscaleThreshold");
-
-        //**TODO need ThresholdProcessor
-        /*
-                // Read the parameters for team prop recognition from the xml file.
-        teamPropParametersXML = new TeamPropParametersXML(WorkingDirectory.getWorkingDirectory() + RobotConstants.XML_DIR);
-        teamPropParameters = teamPropParametersXML.getTeamPropParameters();
 
         // Get the camera configuration from RobotConfig.xml.
         FTCRobot robot = new FTCRobot(this, RobotConstants.RunType.TELEOP_VISION_PREVIEW);
 
-        // Start the front webcam with the pixel count window processor.
+        // Start the front webcam with the grayscale threshold processor.
         if (robot.configuredWebcams == null)
             throw new AutonomousRobotException(TAG, "There are no webcams in the current configuration");
 
         VisionPortalWebcamConfiguration.ConfiguredWebcam frontWebcamConfiguration =
-                Objects.requireNonNull(robot.configuredWebcams.get(RobotConstantsCenterStage.InternalWebcamId.FRONT_WEBCAM),
+                Objects.requireNonNull(robot.configuredWebcams.get(RobotConstantsDecode.InternalWebcamId.FRONT_WEBCAM),
                 TAG + " The FRONT_WEBCAM is not configured");
 
-        pixelCountProcessor = new CameraStreamProcessor.Builder().build();
-        VisionPortalWebcam pixelCountWebcam = new VisionPortalWebcam(frontWebcamConfiguration,
-                RobotConstantsCenterStage.ProcessorIdentifier.CAMERA_STREAM_PREVIEW,
-                Pair.create(pixelCountProcessor, true));
+        grayscaleThresholdProcessor = new GrayscaleThresholdProcessor();
+        VisionPortalWebcam grayscaleThresholdWebcam = new VisionPortalWebcam(frontWebcamConfiguration,
+                RobotConstantsDecode.ProcessorIdentifier.CAMERA_STREAM_PREVIEW,
+                Pair.create(grayscaleThresholdProcessor, true));
 
-        if (!pixelCountWebcam.waitForWebcamStart(2000))
-            throw new AutonomousRobotException(TAG, "Pixel count webcam timed out on start");
+        if (!grayscaleThresholdWebcam.waitForWebcamStart(2000))
+            throw new AutonomousRobotException(TAG, "Grayscale threshold webcam timed out on start");
 
-        frontWebcamConfiguration.setVisionPortalWebcam(pixelCountWebcam);
+        frontWebcamConfiguration.setVisionPortalWebcam(grayscaleThresholdWebcam);
         RobotLogCommon.c(TAG, "PixelCountViewer successfully started on the front webcam");
-
-         */
 
         factoryResetButton = new FTCButton(() -> gamepad1.start);
         factoryResetConfirmButton = new FTCButton(() -> gamepad1.y);

@@ -45,9 +45,8 @@ public class RobotConstantsDecode {
         FRONT_WEBCAM, REAR_WEBCAM, WEBCAM_NPOS
     }
 
-    //**TODO Does DECODE need CAMERA_STREAM_PREVIEW from CenterStage?
     public enum ProcessorIdentifier {
-        RAW_FRAME, APRIL_TAG, PROCESSOR_NPOS
+        RAW_FRAME, APRIL_TAG, CAMERA_STREAM_PREVIEW, PROCESSOR_NPOS
     }
 
     public static final int MAX_ARTIFACTS_IN_REVOLVER = 3;
