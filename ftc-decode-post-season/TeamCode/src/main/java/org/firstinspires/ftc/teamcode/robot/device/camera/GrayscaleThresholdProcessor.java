@@ -33,9 +33,9 @@ public class GrayscaleThresholdProcessor implements VisionProcessor {
     //## This is a callback. It definitely runs on another thread.
     @Override
     public void init(int width, int height, CameraCalibration calibration) {
-        // Init is called from VisionPortalImpl when the first frame for this
-        // processor has been received; the frame itself is not passed in
-        // here.
+        // Init is called from VisionPortalImpl when the first frame for
+        // this processor has been received; the frame itself is not passed
+        // in here.
     }
 
     //## This is a callback; assume it's running on another thread.
@@ -52,7 +52,7 @@ public class GrayscaleThresholdProcessor implements VisionProcessor {
         // So we need to convert to GRAY or BGR for OpenCV here.
         Imgproc.cvtColor(frame, processedMat, Imgproc.COLOR_RGBA2GRAY);
 
-        // Apply OpenCV transformations here, in this case a threshold.
+        // Apply OpenCV transformations here, in this case a simple grayscale threshold.
         int thresholdLow = currentThresholdLow.get();
         processedMat = ImageUtils.preProcessImage(processedMat, imageParameters);
         Imgproc.threshold(processedMat, processedMat,

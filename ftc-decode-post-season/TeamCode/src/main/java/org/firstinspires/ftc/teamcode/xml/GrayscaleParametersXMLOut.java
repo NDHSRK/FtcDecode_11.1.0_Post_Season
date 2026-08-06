@@ -17,7 +17,8 @@ public class GrayscaleParametersXMLOut {
     // The purpose of this class is to write out the file GrayscaleParameters.xml
     // from data structures created by the OpMode SetGrayscaleThreshold.
     public GrayscaleParametersXMLOut(VisionParameters.ImageParameters pImageParameters,
-                                     VisionParameters.GrayParameters pGrayscaleParameters, String pXMLDirectory) throws ParserConfigurationException {
+                                     VisionParameters.GrayParameters pGrayscaleParameters,
+                                     String pXMLDirectory) throws ParserConfigurationException {
         // Android only
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         Document document = factory.newDocumentBuilder().newDocument();
@@ -25,7 +26,7 @@ public class GrayscaleParametersXMLOut {
         String xmlFilePath = pXMLDirectory + FILE_NAME;
 
         // Create elements and append them.
-        Element root = document.createElement("GrayscaleParameters");
+        Element root = document.createElement("grayscale_parameters");
         document.appendChild(root);
 
         // Create the <image_parameters> element
@@ -93,7 +94,7 @@ public class GrayscaleParametersXMLOut {
 
         XMLUtils.writeXMLFile(document, xmlFilePath, pXMLDirectory + RobotConstants.XSLT_FILE_NAME);
 
-        RobotLogCommon.c(TAG, "In StartParametersXMLOut; created and wrote out  + FILE_NAME");
+        RobotLogCommon.c(TAG, "In GrayscaleParametersXMLOut; created and wrote out  + FILE_NAME");
     }
 
 }
