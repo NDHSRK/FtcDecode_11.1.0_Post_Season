@@ -28,7 +28,7 @@ public class VisionParameters {
 
     // From the gray_parameters element of any XML file.
     public static class GrayParameters {
-        public final int threshold_low; // for binary thresholding
+        public int threshold_low; // for binary thresholding
 
         public GrayParameters(int pLowThreshold) {
             threshold_low = pLowThreshold;

@@ -24,9 +24,8 @@ import java.util.Objects;
 
 import javax.xml.parsers.ParserConfigurationException;
 
-// This OpMode gives the drive team a way to check and
-// modify the grayscale thresholding of a cropped
-// webcam frame.
+// This OpMode gives the drive team a way to check and modify
+// the grayscale thresholding of a cropped webcam frame.
 @TeleOp(name = "SetGrayscaleThreshold", group = "Configure")
 //@Disabled
 public class SetGrayscaleThreshold extends LinearOpMode {
@@ -45,12 +44,15 @@ public class SetGrayscaleThreshold extends LinearOpMode {
     private static final int THRESHOLD_CHANGE = 5;
     private VisionParameters.ImageParameters imageParameters;
     private VisionParameters.GrayParameters grayParameters;
-    private int currentThresholdLow;
     private boolean grayParametersChanged = false;
 
     @Override
     public void runOpMode() throws InterruptedException {
         RobotLogCommon.c(TAG, "Initializing SetGrayscaleThreshold");
+
+        // Read in the grayscale parameters from GrayscaleParameters.xml and
+        // set class variables.
+        initializeGrayscaleParameters();
 
         // Get the camera configuration from RobotConfig.xml.
         FTCRobot robot = new FTCRobot(this, RobotConstants.RunType.TELEOP_VISION_PREVIEW);
@@ -61,9 +63,9 @@ public class SetGrayscaleThreshold extends LinearOpMode {
 
         VisionPortalWebcamConfiguration.ConfiguredWebcam frontWebcamConfiguration =
                 Objects.requireNonNull(robot.configuredWebcams.get(RobotConstantsDecode.InternalWebcamId.FRONT_WEBCAM),
-                TAG + " The FRONT_WEBCAM is not configured");
+                        TAG + " The FRONT_WEBCAM is not configured");
 
-        grayscaleThresholdProcessor = new GrayscaleThresholdProcessor();
+        grayscaleThresholdProcessor = new GrayscaleThresholdProcessor(imageParameters);
         VisionPortalWebcam grayscaleThresholdWebcam = new VisionPortalWebcam(frontWebcamConfiguration,
                 RobotConstantsDecode.ProcessorIdentifier.CAMERA_STREAM_PREVIEW,
                 Pair.create(grayscaleThresholdProcessor, true));
@@ -72,7 +74,7 @@ public class SetGrayscaleThreshold extends LinearOpMode {
             throw new AutonomousRobotException(TAG, "Grayscale threshold webcam timed out on start");
 
         frontWebcamConfiguration.setVisionPortalWebcam(grayscaleThresholdWebcam);
-        RobotLogCommon.c(TAG, "PixelCountViewer successfully started on the front webcam");
+        RobotLogCommon.c(TAG, "SetGrayscaleThreshold successfully started on the front webcam");
 
         factoryResetButton = new FTCButton(() -> gamepad1.start);
         factoryResetConfirmButton = new FTCButton(() -> gamepad1.y);
@@ -81,8 +83,6 @@ public class SetGrayscaleThreshold extends LinearOpMode {
         increaseThresholdButton = new FTCButton(() -> gamepad1.dpad_up);
         decreaseThresholdButton = new FTCButton(() -> gamepad1.dpad_down);
         writeThresholdedImageToFileButton = new FTCButton(() -> gamepad1.left_bumper);
-
-        initializeGrayscaleParameters();
 
         while (!isStarted() && !isStopRequested()) {
             updateTelemetry();
@@ -151,7 +151,6 @@ public class SetGrayscaleThreshold extends LinearOpMode {
             return false;
 
         factoryResetRequested = false;
-
         initializeGrayscaleParameters();
 
         RobotLogCommon.i(TAG, "Factory reset of grayscale parameters");
@@ -171,34 +170,27 @@ public class SetGrayscaleThreshold extends LinearOpMode {
     // pixelCountRendering will be null!
     private void updateIncreaseThreshold() {
         if (increaseThresholdButton.is(FTCButton.State.TAP)) {
-
-            currentThresholdLow += THRESHOLD_CHANGE;
-
             grayParametersChanged = true;
+            grayParameters.threshold_low += THRESHOLD_CHANGE;
+            grayscaleThresholdProcessor.setGrayscaleThreshold(grayParameters.threshold_low);
 
-            //**TODO set AtomicInteger; a screen tap on the DS is also required
-            //pixelCountRendering.setGrayscaleThresholdParameters(updatedVisionParameters);
+            //!! A screen tap on the DS is also required.
         }
     }
 
-    // Take no action if this method is called before an OpMode is selected -
-    // pixelCountRendering will be null!
     private void updateDecreaseThreshold() {
         if (decreaseThresholdButton.is(FTCButton.State.TAP)) {
-
-            currentThresholdLow -= THRESHOLD_CHANGE;
-
             grayParametersChanged = true;
+            grayParameters.threshold_low -= THRESHOLD_CHANGE;
+            grayscaleThresholdProcessor.setGrayscaleThreshold(grayParameters.threshold_low);
 
-            //**TODO set AtomicInteger; a screen tap on the DS is also required
-            //pixelCountRendering.setGrayscaleThresholdParameters(updatedVisionParameters);
+            //!! A screen tap on the DS is also required.
         }
     }
 
     private void updateWriteThresholdedImageToFile() {
         if (writeThresholdedImageToFileButton.is(FTCButton.State.TAP)) {
-           //**TODO if (pixelCountRendering != null) // not needed I think
-           //     pixelCountRendering.writeThresholdedImageToFile();
+            grayscaleThresholdProcessor.requestWriteToFile();
         }
     }
 
@@ -215,7 +207,6 @@ public class SetGrayscaleThreshold extends LinearOpMode {
 
         imageParameters = grayscaleParametersXMLIn.getImageParameters();
         grayParameters = grayscaleParametersXMLIn.getGrayscaleParameters();
-        currentThresholdLow = grayParameters.threshold_low;
     }
 
     private void updateTelemetry() {

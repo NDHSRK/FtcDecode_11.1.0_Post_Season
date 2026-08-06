@@ -126,11 +126,14 @@ public class FTCRobot {
                     configuredWebcamsLocal = configXML.getConfiguredWebcams();
                     RobotLogCommon.d(TAG, "Number of webcams configured " + configuredWebcamsLocal.size());
                     if (configuredWebcamsLocal.size() > 2)
-                        throw new AutonomousRobotException(TAG, "CenterStage season: only two webcams at most are supported");
+                        throw new AutonomousRobotException(TAG, "Only two webcams at most are supported");
 
                     matchHardwareWebcamsWithConfiguredWebcams(configuredWebcamsLocal);
-                } else
+                } else {
                     configuredWebcamsLocal = null;
+                    if (pRunType == RobotConstants.RunType.TELEOP_VISION_PREVIEW)
+                        throw new AutonomousRobotException(TAG, "RunType of TELEOP_VISION_PREVIEW requires a webcam");
+                }
 
                 configuredWebcams = configuredWebcamsLocal; // needed to preserve "final"
             }
