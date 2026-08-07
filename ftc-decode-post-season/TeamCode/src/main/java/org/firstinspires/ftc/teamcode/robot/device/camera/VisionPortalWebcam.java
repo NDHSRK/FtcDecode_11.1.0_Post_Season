@@ -64,7 +64,8 @@ public class VisionPortalWebcam {
                 .setCamera(configuredWebcam.getWebcamName())
                 .setCameraResolution(new Size(configuredWebcam.resolutionWidth, configuredWebcam.resolutionHeight))
                 .setStreamFormat(VisionPortal.StreamFormat.MJPEG)
-                .enableLiveView(false);
+                //!! Warning: enableLiveView must be true for onDrawFrame() to be called.
+                .enableLiveView(true);
 
         // Add all assigned processors here, which will enable them.
         assignedProcessors.forEach((k, v) -> builder.addProcessor(v.first));

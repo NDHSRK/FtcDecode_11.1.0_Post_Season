@@ -1,13 +1,16 @@
 package org.firstinspires.ftc.teamcode.robot.device.camera;
 
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 
 import org.firstinspires.ftc.ftcdevcommon.platform.android.WorkingDirectory;
 import org.firstinspires.ftc.robotcore.internal.camera.calibration.CameraCalibration;
 import org.firstinspires.ftc.teamcode.auto.vision.ImageUtils;
 import org.firstinspires.ftc.teamcode.common.RobotConstants;
+import org.firstinspires.ftc.teamcode.common.RobotLogCommon;
 import org.firstinspires.ftc.teamcode.xml.VisionParameters;
 import org.firstinspires.ftc.vision.VisionProcessor;
+import org.opencv.android.Utils;
 import org.opencv.core.Mat;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
@@ -69,11 +72,31 @@ public class GrayscaleThresholdProcessor implements VisionProcessor {
     }
 
     //## This is a callback.
+    // To display an OpenCV thresholded image on an FTC Driver Station,
+    // implement a custom VisionProcessor, override onDrawFrame to convert
+    // your OpenCV Mat to an Android Bitmap and use canvas.drawBitmap() so
+    // it renders on the canvas that is sent to the Driver Station.
     @Override
-    public void onDrawFrame(Canvas canvas, int onScreenWidth, int onScreenHeight,
+    public void onDrawFrame(Canvas pCanvas, int onScreenWidth, int onScreenHeight,
                             float scaleBmpPxToCanvasPx, float scaleCanvasToBotPx,
                             Object userContext) {
-        // Optional: Draw overlays on the Driver Station viewport using Android Canvas
+
+        Mat thresholded = (Mat) userContext;
+
+        //**TODO Look at the advice on converting back to Imgproc.COLOR_GRAY2RGBA
+        // in FrameManagermentAndScaling.java.
+
+        // From CenterStage PixelCountRendering.java but modified after
+        // a multi-step exchange with the Google AI Assistant.
+        // Show the thresholded ROI in the DS camera stream.
+        // First convert the thresholded ROI to an Android Bitmap.
+        Bitmap bmp = Bitmap.createBitmap(thresholded.cols(), thresholded.rows(), Bitmap.Config.RGB_565);
+        Utils.matToBitmap(thresholded, bmp);
+
+        android.graphics.Rect destRect = new android.graphics.Rect(0, 0, onScreenWidth, onScreenHeight);
+        pCanvas.drawBitmap(bmp, null, destRect, null);
+
+        //!! You also need to open a camera stream on the DS.
     }
 
     public void setGrayscaleThreshold(int pThresholdLow) {

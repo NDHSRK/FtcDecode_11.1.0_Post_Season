@@ -174,7 +174,7 @@ public class SetGrayscaleThreshold extends LinearOpMode {
             grayParameters.threshold_low += THRESHOLD_CHANGE;
             grayscaleThresholdProcessor.setGrayscaleThreshold(grayParameters.threshold_low);
 
-            //!! A screen tap on the DS is also required.
+            //!! You also need to open a camera stream on the DS.
         }
     }
 
@@ -184,7 +184,7 @@ public class SetGrayscaleThreshold extends LinearOpMode {
             grayParameters.threshold_low -= THRESHOLD_CHANGE;
             grayscaleThresholdProcessor.setGrayscaleThreshold(grayParameters.threshold_low);
 
-            //!! A screen tap on the DS is also required.
+            //!! You also need to open a camera stream on the DS.
         }
     }
 
