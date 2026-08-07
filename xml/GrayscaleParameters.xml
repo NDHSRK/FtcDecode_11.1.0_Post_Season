@@ -1,0 +1,19 @@
+<!-- Copied from IJThresholdTester GrayTesterParameters; only the file name and top-level element name were modified. -->
+<grayscale_parameters>
+    <image_parameters>
+        <image_source>**webcam**</image_source>
+        <resolution>
+            <width>640</width>
+            <height>480</height>
+        </resolution>
+        <image_roi>
+            <x>0</x>
+            <y>0</y>
+            <width>640</width>
+            <height>480</height>
+        </image_roi>
+    </image_parameters>
+    <gray_parameters>
+        <threshold_low>128</threshold_low>
+    </gray_parameters>
+</grayscale_parameters>
