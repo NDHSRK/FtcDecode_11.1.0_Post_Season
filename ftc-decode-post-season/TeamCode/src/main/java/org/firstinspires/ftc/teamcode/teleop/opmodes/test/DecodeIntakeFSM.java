@@ -106,13 +106,11 @@ public class DecodeIntakeFSM extends TeleOpBase {
 
                 // Updating all button states here is safer even though
                 // not all buttons are queried at each step of the process.
-                if (nextEvent == DecodeTeleOpEvent.GAMEPAD_EVENT) {
-                    intakeButton.update();
-                    outtakeButton.update();
-                    lifterButton.update();
-                    stopLifterButton.update();
-                    exitButton.update();
-                }
+                intakeButton.update();
+                outtakeButton.update();
+                lifterButton.update();
+                stopLifterButton.update();
+                exitButton.update();
 
                 //!! To be correct, each state should ensure that the current event
                 // applies to the state. If a state reacts only to one event then a
