@@ -2,8 +2,8 @@
 package org.firstinspires.ftc.teamcode.xml;
 
 import org.firstinspires.ftc.ftcdevcommon.AutonomousRobotException;
-import org.firstinspires.ftc.teamcode.common.RobotLogCommon;
 import org.firstinspires.ftc.ftcdevcommon.xml.XMLUtils;
+import org.firstinspires.ftc.teamcode.common.RobotLogCommon;
 import org.opencv.core.Rect;
 import org.w3c.dom.Node;
 

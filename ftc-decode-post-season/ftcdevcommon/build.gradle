@@ -10,7 +10,6 @@ android {
         minSdkVersion 25
         //noinspection ExpiredTargetSdkVersion
         targetSdkVersion 28
-        setProperty("archivesBaseName" , "${archivesBaseName}_${versionName}")
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"

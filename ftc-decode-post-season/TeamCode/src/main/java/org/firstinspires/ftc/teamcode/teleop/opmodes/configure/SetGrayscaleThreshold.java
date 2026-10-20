@@ -14,8 +14,12 @@ import org.firstinspires.ftc.teamcode.robot.device.camera.GrayscaleThresholdProc
 import org.firstinspires.ftc.teamcode.robot.device.camera.VisionPortalWebcam;
 import org.firstinspires.ftc.teamcode.robot.device.camera.VisionPortalWebcamConfiguration;
 import org.firstinspires.ftc.teamcode.teleop.common.FTCButton;
-import org.firstinspires.ftc.teamcode.xml.GrayscaleParametersXMLIn;
-import org.firstinspires.ftc.teamcode.xml.GrayscaleParametersXMLOut;
+//**TODO Implement these classes when you are reading in and writing out
+// an entire XML file. See Decode 11.1.0 StartParametersXMLIn/Out.
+// Otherwise put element replacement methods into the main XML file,
+// e.g. BiobuzzParametersXML.java in IJOpenCVTestbed4.
+//import org.firstinspires.ftc.teamcode.xml.GrayscaleParametersXMLIn;
+//import org.firstinspires.ftc.teamcode.xml.GrayscaleParametersXMLOut;
 import org.firstinspires.ftc.teamcode.xml.VisionParameters;
 import org.xml.sax.SAXException;
 
@@ -23,6 +27,10 @@ import java.io.IOException;
 import java.util.Objects;
 
 import javax.xml.parsers.ParserConfigurationException;
+
+//**TODO !! 10/20/26 Suspend development on grayscale and switch
+// to HSV, since we'll need HSV for Biobuzz. Copied/renamed
+// this class to SetHSVThreshold.
 
 // This OpMode gives the drive team a way to check and modify
 // the grayscale thresholding of a cropped webcam frame.
@@ -37,6 +45,7 @@ public class SetGrayscaleThreshold extends LinearOpMode {
     private FTCButton factoryResetCancelButton;
     private boolean factoryResetRequested = false;
 
+    private int threshholdLow; //**TODO initialize from XML
     private FTCButton increaseThresholdButton;
     private FTCButton decreaseThresholdButton;
     private FTCButton writeThresholdedImageToFileButton;
@@ -93,12 +102,12 @@ public class SetGrayscaleThreshold extends LinearOpMode {
         // The driver has hit the play button.
         if (opModeIsActive()) {
             if (grayParametersChanged) {
-                try {
-                    new GrayscaleParametersXMLOut(imageParameters, grayParameters,
-                            WorkingDirectory.getWorkingDirectory() + RobotConstants.XML_DIR);
-                } catch (ParserConfigurationException pe) {
-                    throw new AutonomousRobotException(TAG, pe.getMessage());
-                }
+//**TODO                try {
+//                    new GrayscaleParametersXMLOut(imageParameters, grayParameters,
+//                            WorkingDirectory.getWorkingDirectory() + RobotConstants.XML_DIR);
+//                } catch (ParserConfigurationException pe) {
+//                    throw new AutonomousRobotException(TAG, pe.getMessage());
+//                }
 
                 RobotLogCommon.i(TAG, "Writing GrayscaleParameters.xml");
                 telemetry.addLine("Writing GrayscaleParameters.xml");
@@ -166,12 +175,10 @@ public class SetGrayscaleThreshold extends LinearOpMode {
             factoryResetRequested = false;
     }
 
-    // Take no action if this method is called before an OpMode is selected -
-    // pixelCountRendering will be null!
     private void updateIncreaseThreshold() {
         if (increaseThresholdButton.is(FTCButton.State.TAP)) {
             grayParametersChanged = true;
-            grayParameters.threshold_low += THRESHOLD_CHANGE;
+            threshholdLow += THRESHOLD_CHANGE;
             grayscaleThresholdProcessor.setGrayscaleThreshold(grayParameters.threshold_low);
 
             //!! You also need to open a camera stream on the DS.
@@ -181,7 +188,7 @@ public class SetGrayscaleThreshold extends LinearOpMode {
     private void updateDecreaseThreshold() {
         if (decreaseThresholdButton.is(FTCButton.State.TAP)) {
             grayParametersChanged = true;
-            grayParameters.threshold_low -= THRESHOLD_CHANGE;
+            threshholdLow -= THRESHOLD_CHANGE;
             grayscaleThresholdProcessor.setGrayscaleThreshold(grayParameters.threshold_low);
 
             //!! You also need to open a camera stream on the DS.
@@ -198,15 +205,15 @@ public class SetGrayscaleThreshold extends LinearOpMode {
         grayParametersChanged = false;
 
         String fullXMLDir = WorkingDirectory.getWorkingDirectory() + RobotConstants.XML_DIR;
-        GrayscaleParametersXMLIn grayscaleParametersXMLIn;
-        try {
-            grayscaleParametersXMLIn = new GrayscaleParametersXMLIn(fullXMLDir);
-        } catch (ParserConfigurationException | SAXException | IOException e) {
-            throw new AutonomousRobotException(TAG, e.getMessage());
-        }
-
-        imageParameters = grayscaleParametersXMLIn.getImageParameters();
-        grayParameters = grayscaleParametersXMLIn.getGrayscaleParameters();
+//**TODO        GrayscaleParametersXMLIn grayscaleParametersXMLIn;
+//        try {
+//            grayscaleParametersXMLIn = new GrayscaleParametersXMLIn(fullXMLDir);
+//        } catch (ParserConfigurationException | SAXException | IOException e) {
+//            throw new AutonomousRobotException(TAG, e.getMessage());
+//        }
+//
+//        imageParameters = grayscaleParametersXMLIn.getImageParameters();
+//        grayParameters = grayscaleParametersXMLIn.getGrayscaleParameters();
     }
 
     private void updateTelemetry() {
