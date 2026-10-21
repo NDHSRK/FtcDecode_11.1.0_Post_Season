@@ -43,6 +43,18 @@ public class SetHSVThreshold extends LinearOpMode {
     private int threshholdLow; //**TODO initialize hue low, high; saturation
     // low; value lowfrom XML
 
+    //**TODO Oh no! Also need buttons for factoryResetButton, factoryResetConfirmButton,
+    // factoryResetCancelButton, writeThresholdedImageToFileButton
+    /*
+        factoryResetButton = new FTCButton(() -> gamepad1.start);
+        factoryResetConfirmButton = new FTCButton(() -> gamepad1.y);
+        factoryResetCancelButton = new FTCButton(() -> gamepad1.x);
+
+        increaseThresholdButton = new FTCButton(() -> gamepad1.dpad_up);
+        decreaseThresholdButton = new FTCButton(() -> gamepad1.dpad_down);
+        writeThresholdedImageToFileButton = new FTCButton(() -> gamepad1.left_bumper);
+     */
+
     //**TODO Buttons for HSV color calibration
     /*
     Toggle for red, blue, yellow -> DP up
@@ -54,6 +66,11 @@ public class SetHSVThreshold extends LinearOpMode {
     Need a button for
     requestImageCapture = new FTCButton(this, FTCButton.ButtonValue.GAMEPAD_1_LEFT_BUMPER);
     use DPAD down
+    A button press issues a call to pixelCountRendering.requestImageCapture()
+    See C:\Users\lonep\OneDrive\Documents\FTC\FTC 2026 Post Season\AutomaticThresholding\teleop configure from CenterStage
+    and C:\Users\lonep\OneDrive\Documents\FTC\FTC 2026 Post Season\AutomaticThresholding\robot camera from CenterStage
+    class PixelCountRendering implements CameraStreamRendering gets an image and performs
+    OpenCV operations on it.
     */
 
     private FTCButton increaseThresholdButton;

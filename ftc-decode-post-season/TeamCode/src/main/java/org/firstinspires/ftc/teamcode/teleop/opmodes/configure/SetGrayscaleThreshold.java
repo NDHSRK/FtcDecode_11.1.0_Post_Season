@@ -31,6 +31,9 @@ import javax.xml.parsers.ParserConfigurationException;
 //**TODO !! 10/20/26 Suspend development on grayscale and switch
 // to HSV, since we'll need HSV for Biobuzz. Copied/renamed
 // this class to SetHSVThreshold.
+// 10/21/26 Because of the good results we got for the Biobuzz
+// game elements with the L*a*b* color space, copy/rename this
+// class to SetLABThresholds and continue development there.
 
 // This OpMode gives the drive team a way to check and modify
 // the grayscale thresholding of a cropped webcam frame.
